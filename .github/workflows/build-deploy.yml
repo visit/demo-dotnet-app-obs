@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  id-token: write   # required for OIDC login
+  id-token: write # required for OIDC login
   contents: read
 
 env:
@@ -39,8 +39,8 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.x'
-          dotnet-quality: 'preview'
+          dotnet-version: "10.x"
+          dotnet-quality: "preview"
 
       - name: Azure login (OIDC)
         uses: azure/login@v2
@@ -94,4 +94,4 @@ jobs:
             --create-namespace \
             --set global.registry=${{ env.ACR_LOGIN_SERVER }} \
             --set global.tag=${{ github.sha }} \
-            --wait --timeout 5m
+            --wait --timeout 10m
