@@ -1,0 +1,31 @@
+global:
+  registry: "" # overridden by workflow: --set global.registry=...
+  tag: "latest" # overridden by workflow: --set global.tag=...
+
+catalogApi:
+  replicaCount: 1
+  image:
+    name: catalog-api
+  service:
+    type: LoadBalancer
+    port: 80
+    targetPort: 8080
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+postgres:
+  image: pgvector/pgvector:pg17
+  database: catalogdb
+  username: postgres
+  password: "Str0ng!Pass"
+  storage: 2Gi
+
+rabbitmq:
+  image: rabbitmq:3-management
+  username: guest
+  password: guest
