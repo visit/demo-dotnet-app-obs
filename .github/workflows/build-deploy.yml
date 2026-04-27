@@ -94,4 +94,4 @@ jobs:
             --create-namespace \
             --set global.registry=${{ env.ACR_LOGIN_SERVER }} \
             --set global.tag=${{ github.sha }} \
-            --wait --timeout 10m
+            --timeout 10m
