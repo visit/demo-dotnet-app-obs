@@ -35,6 +35,12 @@ spec:
               value: Development
             - name: ASPNETCORE_HTTP_PORTS
               value: "8080"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://grafana-k8s-monitoring-alloy-receiver.default.svc.cluster.local:4317"
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: "grpc"
+            - name: OTEL_SERVICE_NAME
+              value: "catalog-api"
           resources:
             {{- toYaml .Values.catalogApi.resources | nindent 12 }}
           readinessProbe:
