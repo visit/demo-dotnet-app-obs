@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>eShop Catalog</title>
+
+    <!-- Grafana Faro SDK (CDN) -->
+    <script src="https://unpkg.com/@grafana/faro-web-sdk@1.15.3/dist/bundle/faro-web-sdk.iife.js"></script>
+    <script src="https://unpkg.com/@grafana/faro-web-tracing@1.15.3/dist/bundle/faro-web-tracing.iife.js"></script>
+    <script>
+      const { initializeFaro, getWebInstrumentations } = GrafanaFaroWebSdk;
+      const { TracingInstrumentation } = GrafanaFaroWebTracing;
+
+      initializeFaro({
+        url: "https://faro-collector-prod-eu-north-0.grafana.net/collect/38b63e5252c120236c2eb300fb279e43",
+        app: {
+          name: "eshop-webapp",
+          version: "1.0.0",
+          environment: "production",
+        },
+        instrumentations: [
+          ...getWebInstrumentations(),
+          new TracingInstrumentation(),
+        ],
+      });
+    </script>
+
+    <style>
+      body {
+        font-family: sans-serif;
+        max-width: 960px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+      }
+      h1 {
+        color: #e05d35;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 1rem;
+        margin-top: 2rem;
+      }
+      .card {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 1rem;
+      }
+      .card h3 {
+        margin: 0 0 0.5rem;
+        font-size: 0.95rem;
+      }
+      .card .price {
+        font-weight: bold;
+        color: #e05d35;
+      }
+      .card .stock {
+        font-size: 0.8rem;
+        color: #666;
+      }
+      #status {
+        color: #666;
+        margin-top: 1rem;
+      }
+      #error {
+        color: red;
+      }
+      .pagination {
+        margin-top: 1.5rem;
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+      }
+      button {
+        padding: 0.4rem 1rem;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>eShop Catalog</h1>
+    <p id="status">Loading...</p>
+    <p id="error"></p>
+    <div class="grid" id="products"></div>
+    <div class="pagination">
+      <button id="prev" disabled onclick="changePage(-1)">← Prev</button>
+      <span id="pageInfo"></span>
+      <button id="next" onclick="changePage(1)">Next →</button>
+    </div>
+
+    <script>
+      const API = "http://20.101.5.224/api/catalog/items?api-version=1.0";
+      const PAGE_SIZE = 12;
+      let currentPage = 0;
+      let totalCount = 0;
+
+      async function loadProducts(page) {
+        const status = document.getElementById("status");
+        const error = document.getElementById("error");
+        const grid = document.getElementById("products");
+
+        status.textContent = "Loading...";
+        error.textContent = "";
+        grid.innerHTML = "";
+
+        try {
+          const url = `${API}&pageIndex=${page}&pageSize=${PAGE_SIZE}`;
+          const res = await fetch(url);
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const data = await res.json();
+
+          totalCount = data.count;
+          currentPage = page;
+          status.textContent = `Showing ${data.data.length} of ${totalCount} products`;
+
+          data.data.forEach((item) => {
+            const card = document.createElement("div");
+            card.className = "card";
+            card.innerHTML = `
+            <h3>${item.name}</h3>
+            <div class="price">$${item.price.toFixed(2)}</div>
+            <div class="stock">Stock: ${item.availableStock}</div>
+          `;
+            grid.appendChild(card);
+          });
+
+          document.getElementById("prev").disabled = page === 0;
+          document.getElementById("next").disabled =
+            (page + 1) * PAGE_SIZE >= totalCount;
+          document.getElementById("pageInfo").textContent =
+            `Page ${page + 1} of ${Math.ceil(totalCount / PAGE_SIZE)}`;
+        } catch (e) {
+          status.textContent = "";
+          error.textContent = `Failed to load products: ${e.message}`;
+          // Faro will capture this as an error automatically
+          throw e;
+        }
+      }
+
+      function changePage(delta) {
+        loadProducts(currentPage + delta);
+      }
+
+      loadProducts(0);
+    </script>
+  </body>
+</html>
