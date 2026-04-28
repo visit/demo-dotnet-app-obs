@@ -6,6 +6,27 @@ data:
   index.html: |
 {{ .Files.Get "files/index.html" | indent 4 }}
 ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: webapp-nginx-conf
+data:
+  default.conf: |
+    server {
+      listen 80;
+      root /usr/share/nginx/html;
+      index index.html;
+
+      location /api/ {
+        proxy_pass http://catalog-api.eshop.svc.cluster.local/api/;
+        proxy_set_header Host catalog-api.eshop.svc.cluster.local;
+      }
+
+      location / {
+        try_files $uri $uri/ /index.html;
+      }
+    }
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -30,10 +51,15 @@ spec:
           volumeMounts:
             - name: html
               mountPath: /usr/share/nginx/html
+            - name: nginx-conf
+              mountPath: /etc/nginx/conf.d
       volumes:
         - name: html
           configMap:
             name: webapp-html
+        - name: nginx-conf
+          configMap:
+            name: webapp-nginx-conf
 ---
 apiVersion: v1
 kind: Service
