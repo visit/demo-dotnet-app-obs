@@ -11,8 +11,8 @@ permissions:
 
 env:
   ACR_LOGIN_SERVER: ${{ secrets.ACR_LOGIN_SERVER }}
-  AKS_RESOURCE_GROUP: rg-observability
-  AKS_CLUSTER_NAME: aks-obs-03
+  AKS_RESOURCE_GROUP: ${{ secrets.AKS_RESOURCE_GROUP }}
+  AKS_CLUSTER_NAME: ${{ secrets.AKS_CLUSTER_NAME }}
   NAMESPACE: eshop
 
 jobs:
